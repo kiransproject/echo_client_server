@@ -6,6 +6,8 @@ import java.net.*;
 public class TestServer {
 	
 	String what = "hi this is kiran"; // define a string
+	BufferedReader bufreader;
+	String line;
 
 	public void run() { //public function
 		
@@ -15,9 +17,17 @@ public class TestServer {
 				while(true) {
 					Socket sock = serverSock1.accept(); // this blocks and waits for a connection
 
+					InputStreamReader reader = new InputStreamReader(sock.getInputStream());
+//					DataInputStream reader = new DataInputStream(sock.getInputStream());
 					PrintWriter writer = new PrintWriter(sock.getOutputStream());
-					writer.println(what);
-					writer.close();
+					bufreader = new BufferedReader(reader);
+
+					//System.out.println(reader);
+					String advice = bufreader.readLine();
+							//line = reader.readLine();
+					writer.println(advice);
+					//writer.println(bufreader);
+					//writer.close();
 					//System.out.println(what);
 				}
 		} catch(IOException ex){
