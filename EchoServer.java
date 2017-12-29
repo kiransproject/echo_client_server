@@ -21,37 +21,31 @@ public class EchoServer {
 					Socket clientSocket = null;
 					try {
 							clientSocket = this.serverSocket.accept();
-					} catch ( IOException e) {
+					}catch ( IOException e) {
 							if (isStopped()){
-									logger.info("Server Stopped haha.");
-									//System.out.println("Server Stopped.");
+									logger.info("Server Stopped");
 									return;
 							}
-							logger.log(Level.SEVERE,"Error accepting Client connection",e);
-							//throw new RuntimeException("Error accepting Client connection", e);
+							logger.log(Level.SEVERE,"Error accepting Client connection, exception {0}",e);
 					}
-		new Thread(
-			new EchoRunner(clientSocket)).start();
-			logger.info("new client connected");
+			
+				new Thread(
+				new EchoRunner(clientSocket)).start();
+				logger.log(Level.INFO,"New Client Connected {0}", clientSocket.getRemoteSocketAddress());
 			}
 			logger.info("Server Stopped.");
 		//	System.out.println("server stopped.");
 		}
 		
-        /*catch (IOException e) {
-            System.out.println("Exception caught when trying to listen on port "
-                + portNumber + " or listening for a connection");
-            System.out.println(e.getMessage());
-       } */
-    
+   
 
 		public synchronized void stop(){
 				this.isStopped = true;
 				try {
 					this.serverSocket.close();
 				} catch (IOException e) {
-						logger.log(Level.SEVERE, "Error closing server", e);
-						//throw new RuntimeException("Error closing server", e);
+						logger.log(Level.SEVERE, "Error Closing serveri, exception: {0}", e);
+						//throw new RuntimeException("Error Closing server", e);
 				}
 		}
 		
@@ -60,18 +54,9 @@ public class EchoServer {
 					this.serverSocket = new ServerSocket(this.portNumber);
 				} catch (IOException e) {
 					//throw new RuntimeException("Cannot open port 7878", e);
-					logger.log(Level.SEVERE,"Cannot open port 7878",e);
+					logger.log(Level.SEVERE,"Cannot open port 7878, exception : {0}",e);
 				}
 		}
-
-		/*private void closeServerSocket() {
-				try {
-						this.serverSocket.close();
-				} catch (IOException e) {
-					//throw new RuntimeException("Cannot open port 7878", e);
-					logger.log(Level.SEVERE,"Cannot close connection",e);
-				}
-		}*/
 
 		private synchronized boolean isStopped() {
 			return this.isStopped;
@@ -98,18 +83,21 @@ public class EchoServer {
 						try {
 								PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);                   
 								BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-								//while (true) {
-								//		final String line = in.readLine();
-								//		if (line == null) break;
 								//while (inputLine.hasNextLine()) {
 								while((inputLine = in.readLine()) != null) {
-										logger.info("incoming characters");
+										logger.log(Level.INFO,"Incoming Characters from {0}",  clientSocket.getRemoteSocketAddress() );
 										out.println(inputLine);
 							}
-							logger.info("Client Disconnected");
-						} catch(IOException e) {
-								logger.log(Level.SEVERE,"Exception is ",e);
-								//e.printStackTrace();
+							logger.log(Level.INFO,"Client {0} Disconnected",clientSocket.getRemoteSocketAddress()  );
+						try {
+								clientSocket.close();
+								logger.log(Level.INFO,"Client Socket Closed {0}" , clientSocket.getRemoteSocketAddress() );
+						}
+						catch (IOException e){
+						logger.log(Level.SEVERE,"Issue Closing Client Socket {0}",e);
+						}
+						}catch(IOException e) {
+								logger.log(Level.SEVERE,"Exception is {0}",e);
 						}
 				}
 
