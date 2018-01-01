@@ -31,10 +31,9 @@ public class EchoServer {
 			
 				new Thread(
 				new EchoRunner(clientSocket)).start();
-				logger.log(Level.INFO,"New Client Connected {0}", clientSocket.getRemoteSocketAddress());
+				logger.log(Level.INFO,"New Client Connected {0}, {1} Active Threads", new Object [] {clientSocket.getRemoteSocketAddress(), (java.lang.Thread.activeCount()-1)}) ;//new object required to reference multiple parameters in log message, minus 1 to account for main thread
 			}
 			logger.info("Server Stopped.");
-		//	System.out.println("server stopped.");
 		}
 		
    
@@ -58,6 +57,16 @@ public class EchoServer {
 				}
 		}
 
+		private void closeClientSocket(Socket clientSocket) {
+				try {
+						clientSocket.close();
+						logger.log(Level.INFO,"Client Socket Closed {0}" , clientSocket.getRemoteSocketAddress() );
+				}
+				catch (IOException e){
+				logger.log(Level.SEVERE,"Issue Closing Client Socket {0}",e);
+				}
+		}
+
 		private synchronized boolean isStopped() {
 			return this.isStopped;
 		}
@@ -70,7 +79,6 @@ public class EchoServer {
 
 		public class EchoRunner implements Runnable{
 				protected Socket clientSocket = null;
-
 		//		BufferedReader in;
 		//		PrintWriter out = new PrinterWriter();
 				String inputLine;
@@ -84,19 +92,21 @@ public class EchoServer {
 								PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);                   
 								BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 								//while (inputLine.hasNextLine()) {
-								while((inputLine = in.readLine()) != null) {
-										logger.log(Level.INFO,"Incoming Characters from {0}",  clientSocket.getRemoteSocketAddress() );
-										out.println(inputLine);
-							}
-							logger.log(Level.INFO,"Client {0} Disconnected",clientSocket.getRemoteSocketAddress()  );
-						try {
-								clientSocket.close();
-								logger.log(Level.INFO,"Client Socket Closed {0}" , clientSocket.getRemoteSocketAddress() );
-						}
-						catch (IOException e){
-						logger.log(Level.SEVERE,"Issue Closing Client Socket {0}",e);
-						}
-						}catch(IOException e) {
+//								logger.log(Level.INFO,"out of while loop");
+								while (clientSocket.getInetAddress().isReachable(10000)){
+										while((inputLine = in.readLine()) != null) {
+												logger.log(Level.INFO,"Incoming Characters from {0}",  clientSocket.getRemoteSocketAddress() );
+												out.println(inputLine);
+//												logger.log(Level.INFO,"in while loop");
+										}
+								}
+
+								logger.log(Level.INFO,"Client {0} Disconnected",clientSocket.getRemoteSocketAddress()  );
+								closeClientSocket(clientSocket);
+							}catch (IllegalArgumentException s){//if the tiemout is negative
+									logger.log(Level.SEVERE, "Client Timeout, closing connection {0} ",s);
+								closeClientSocket(clientSocket);
+							}catch(IOException e) {
 								logger.log(Level.SEVERE,"Exception is {0}",e);
 						}
 				}
