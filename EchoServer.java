@@ -92,9 +92,9 @@ public class EchoServer {
 								PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);                   
 								BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 								//while (inputLine.hasNextLine()) {
-								logger.log(Level.INFO,"out of while loop");
-								while (clientSocket.getInetAddress().isReachable(10000)){
-									logger.log(Level.INFO, "in while loop 1");
+								//logger.log(Level.INFO,"out of while loop");
+								while (!(clientSocket.isClosed())){
+									//logger.log(Level.INFO, "in while loop 1");
 										while((inputLine = in.readLine()) != null) {
 
 												logger.log(Level.INFO,"Incoming Characters from {0}",  clientSocket.getRemoteSocketAddress() );
