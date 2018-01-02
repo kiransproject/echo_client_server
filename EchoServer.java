@@ -93,7 +93,7 @@ public class EchoServer {
 								BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 								//while (inputLine.hasNextLine()) {
 								//logger.log(Level.INFO,"out of while loop");
-								while (!(clientSocket.isClosed())){
+								//while (!(clientSocket.isClosed())){
 									//logger.log(Level.INFO, "in while loop 1");
 										while((inputLine = in.readLine()) != null) {
 
@@ -101,7 +101,7 @@ public class EchoServer {
 												out.println(inputLine);
 //												logger.log(Level.INFO,"in while loop");
 										}
-								}
+							//	}
 
 								logger.log(Level.INFO,"Client {0} Disconnected",clientSocket.getRemoteSocketAddress()  );
 								closeClientSocket(clientSocket);
