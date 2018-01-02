@@ -2,6 +2,9 @@ import socket
 import sys
 from multiprocessing.dummy import Pool
 
+sockets =[]
+upperbound = 10
+text = ['test1\n', 'test2\n']
 # Create a TCP/IP socket
 
 def OpenSocket():
@@ -25,7 +28,7 @@ def CloseSocket(sock):
 def SendandPrint(soc):
     data = ''
     try:
-        for line in sys.stdin:
+        for line in text:
                 try:
                     soc.send(line.encode())
                     data = soc.recv((len(line))).decode()
@@ -41,7 +44,11 @@ def SendandPrint(soc):
         CloseSocket(soc)
 
 def main():
-    SendandPrint(OpenSocket())
+    for i in range (0,upperbound):
+        sockets.append(OpenSocket()) #open 10 sockets
+    pools = Pool(upperbound)
+    pools.map(SendandPrint, sockets)
+    #SendandPrint(OpenSocket())
 
 if __name__ == "__main__":
     main()
