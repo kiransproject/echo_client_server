@@ -1,10 +1,12 @@
 import socket
 import sys
 from multiprocessing.dummy import Pool
+import string
+import random
 
 sockets =[]
+chars = []
 upperbound = 10
-text = ['test1\n', 'test2\n']
 # Create a TCP/IP socket
 
 def OpenSocket():
@@ -24,18 +26,26 @@ def CloseSocket(sock):
         sock.close()
     except socket.error as ex:
         print ("Caught exception socket.error : %s" % ex)
-    
+
+# Function adapted from https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits-in-python/23728630#23728630
+def char_gen(size=1000): 
+    return ((''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(size)))+'\r')
+# pick a random char from the alphabet or digit , underscore is to ignore index, so do size times, \r needs to be appended to trigger EOF exception
+
+
 def SendandPrint(soc):
-    data = ''
+    #soc = OpenSocket()
+    line = char_gen()
     try:
-        for line in text:
-                try:
-                    soc.send(line.encode())
-                    data = soc.recv((len(line))).decode()
-                    print (data)
-                except (EOFError):
-                    CloseSocket(soc)
-                    break
+        soc.send(line.encode()) 
+        data = soc.recv(len(line)).decode()
+        if (line.strip() == (data.strip())): #strip used to remove any special characters
+            return True
+        else:
+            return False
+    except (EOFError):
+        CloseSocket(soc)
+        #break
     except (RuntimeError): #add socet clousre
         print("Run time Error occureed")
         CloseSocket(soc)
@@ -45,10 +55,18 @@ def SendandPrint(soc):
 
 def main():
     for i in range (0,upperbound):
-        sockets.append(OpenSocket()) #open 10 sockets
+        #chars.append((char_gen()))
+        sockets.append(OpenSocket())
     pools = Pool(upperbound)
-    pools.map(SendandPrint, sockets)
-    #SendandPrint(OpenSocket())
+    test = ['5\r','5\r','5\r','5\r']
+    results = pools.map(SendandPrint,sockets)
+    pools.close()
+    pools.join()
+    #print(results)
+    if (all(x==results[0] for x in results)):
+        print ("All tests echoed back correctly")
+    else:
+        print("Some tests failed, results as follows, with True indicating a correct response: " + results)
 
 if __name__ == "__main__":
     main()
