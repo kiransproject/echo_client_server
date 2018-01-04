@@ -3,6 +3,7 @@ import sys
 from multiprocessing.dummy import Pool
 import string
 import random
+import time
 
 sockets =[]
 upperbound = 10
@@ -19,10 +20,10 @@ def OpenSocket():
     except socket.error as exc:
         print ("Caught exception socket.error : %s" % exc)
 
-def CloseSocket(sock):
+def CloseSocket(sok):
     try:
-        sock.shutdown(socet.SHUT_RDWR)
-        sock.close()
+        sok.shutdown(socket.SHUT_RDWR) #RDWR further sends and receives are now disallowed
+        sok.close()
     except socket.error as ex:
         print ("Caught exception socket.error : %s" % ex)
 
@@ -33,18 +34,20 @@ def char_gen(size=1000):
 
 
 def SendandPrint(soc):
+    time.sleep(5)
     line = char_gen()
     try:
         soc.send(line.encode()) 
         data = soc.recv(len(line)).decode()
         if (line.strip() == (data.strip())): #strip used to remove any special characters
+            CloseSocket(soc)
             return True
         else:
+            CloseSocket(soc)
             return False
     except (EOFError):
         CloseSocket(soc)
-        #break
-    except (RuntimeError): #add socet clousre
+    except (RuntimeError): #add socket clousre
         print("Run time Error occureed")
         CloseSocket(soc)
     except (OSError):
@@ -53,18 +56,15 @@ def SendandPrint(soc):
 
 def main():
     for i in range (0,upperbound):
-        #chars.append((char_gen()))
         sockets.append(OpenSocket())
-    pools = Pool(upperbound)
-    test = ['5\r','5\r','5\r','5\r']
+    pools = Pool(upperbound) #create pools
     results = pools.map(SendandPrint,sockets)
-    pools.close()
-    pools.join()
-    #print(results)
-    if (all(x==results[0] for x in results)):
+    pools.close() #workers will terminate when all work already assigned has completed
+    pools.join() #waits until all threads are done before proceeding 
+    if (all(x==True for x in results)):
         print ("All tests echoed back correctly")
     else:
-        print("Some tests failed, results as follows, with True indicating a correct response: " + results)
+        print("Some tests failed, results as follows, with True indicating a correct response: " + " ".join(str(x) for x in results))
 
 
 if __name__ == "__main__":

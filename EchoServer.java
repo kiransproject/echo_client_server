@@ -10,7 +10,7 @@ public class EchoServer {
 		protected Thread runningThread = null;
 		private static final Logger logger = Logger.getLogger(EchoServer.class.getName()); //static as there is only one logger per class, final variables can only be assigned once
 
-
+		// function go modified from http://tutorials.jenkov.com/java-multithreaded-servers/multithreaded-server.html
 		public void go () {
 				synchronized(this){ //obtain lock on the current instance
 						this.runningThread = Thread.currentThread(); //get current thread
@@ -68,12 +68,21 @@ public class EchoServer {
 			return this.isStopped;
 		}
 
+
 		public static void main(String [] args) { //static only belongs to the class
 				logger.info("Server Started"); //default logging to console
+				Runtime.getRuntime().addShutdownHook(new Thread(){
+						public void run() {
+								while ((java.lang.Thread.activeCount()) > 3 ){ // as three threads running with no clients
+									System.out.println("Waiting to shutdown, " + java.lang.Thread.activeCount() + " active threads");
+								}
+						}
+				}); 
 				EchoServer server = new EchoServer();
 				server.go();
 		}
 
+		// function EchoRunner modified from http://tutorials.jenkov.com/java-multithreaded-servers/multithreaded-server.html
 		public class EchoRunner implements Runnable{
 				protected Socket clientSocket = null;
 				String inputLine;
