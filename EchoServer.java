@@ -1,7 +1,6 @@
 import java.net.*;
 import java.io.*;
 import java.util.logging.*;
-//import java.util.scanner.*;
 
 public class EchoServer {
         
@@ -9,12 +8,12 @@ public class EchoServer {
 		protected boolean isStopped = false;
 		protected ServerSocket serverSocket = null;
 		protected Thread runningThread = null;
-		private static final Logger logger = Logger.getLogger(EchoServer.class.getName()); //static as there is only one logger per class, final variable can only be assigned once
+		private static final Logger logger = Logger.getLogger(EchoServer.class.getName()); //static as there is only one logger per class, final variables can only be assigned once
 
 
 		public void go () {
-				synchronized(this){
-						this.runningThread = Thread.currentThread();
+				synchronized(this){ //obtain lock on the current instance
+						this.runningThread = Thread.currentThread(); //get current thread
 				}
 			openServerSocket();
 			while (! isStopped()){
@@ -43,8 +42,7 @@ public class EchoServer {
 				try {
 					this.serverSocket.close();
 				} catch (IOException e) {
-						logger.log(Level.SEVERE, "Error Closing serveri, exception: {0}", e);
-						//throw new RuntimeException("Error Closing server", e);
+						logger.log(Level.SEVERE, "Error Closing server, exception: {0}", e);
 				}
 		}
 		
@@ -52,7 +50,6 @@ public class EchoServer {
 				try {
 					this.serverSocket = new ServerSocket(this.portNumber);
 				} catch (IOException e) {
-					//throw new RuntimeException("Cannot open port 7878", e);
 					logger.log(Level.SEVERE,"Cannot open port 7878, exception : {0}",e);
 				}
 		}
@@ -79,8 +76,6 @@ public class EchoServer {
 
 		public class EchoRunner implements Runnable{
 				protected Socket clientSocket = null;
-		//		BufferedReader in;
-		//		PrintWriter out = new PrinterWriter();
 				String inputLine;
 
 				public EchoRunner(Socket clientSocket){
@@ -91,24 +86,16 @@ public class EchoServer {
 						try {
 								PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);                   
 								BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-								//while (inputLine.hasNextLine()) {
-								//logger.log(Level.INFO,"out of while loop");
-								//while (!(clientSocket.isClosed())){
-									//logger.log(Level.INFO, "in while loop 1");
-										while((inputLine = in.readLine()) != null) {
-
-												logger.log(Level.INFO,"Incoming Characters from {0}",  clientSocket.getRemoteSocketAddress() );
-												out.println(inputLine);
-//												logger.log(Level.INFO,"in while loop");
+								while((inputLine = in.readLine()) != null) {
+										logger.log(Level.INFO,"Incoming Characters from {0}",  clientSocket.getRemoteSocketAddress() );
+										out.println(inputLine);
 										}
-							//	}
-
 								logger.log(Level.INFO,"Client {0} Disconnected",clientSocket.getRemoteSocketAddress()  );
 								closeClientSocket(clientSocket);
-							}catch (IllegalArgumentException s){//if the tiemout is negative
-									logger.log(Level.SEVERE, "Client Timeout, closing connection {0} ",s);
+							}catch (SocketTimeoutException s){
+									logger.log(Level.SEVERE, "No response Client Timeout, closing connection {0} ",s);
 								closeClientSocket(clientSocket);
-							}catch(IOException e) {
+							}	catch(IOException e) {
 								logger.log(Level.SEVERE,"Exception is {0}",e);
 						}
 				}

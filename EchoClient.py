@@ -5,7 +5,6 @@ import string
 import random
 
 sockets =[]
-chars = []
 upperbound = 10
 # Create a TCP/IP socket
 
@@ -14,7 +13,7 @@ def OpenSocket():
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Connect the socket to the port where the server is listening
         server_address = ('localhost', 7878)
-        print ( 'connecting to %s port %s' % server_address)
+        # print ( 'connecting to %s port %s' % server_address)
         sock.connect(server_address)
         return sock
     except socket.error as exc:
@@ -34,7 +33,6 @@ def char_gen(size=1000):
 
 
 def SendandPrint(soc):
-    #soc = OpenSocket()
     line = char_gen()
     try:
         soc.send(line.encode()) 
@@ -67,6 +65,7 @@ def main():
         print ("All tests echoed back correctly")
     else:
         print("Some tests failed, results as follows, with True indicating a correct response: " + results)
+
 
 if __name__ == "__main__":
     main()
