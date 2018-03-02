@@ -34,7 +34,7 @@ def char_gen(size=1000):
 
 
 def SendandPrint(soc):
-    time.sleep(5)
+#    time.sleep(5)
     line = char_gen()
     try:
         soc.send(line.encode()) 
